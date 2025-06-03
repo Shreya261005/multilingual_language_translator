@@ -11,6 +11,7 @@ English, Hindi, French, German, Spanish, Italian, Russian, Chinese, Arabic
 ⚡ Caches models to avoid re-downloading and improve performance
 
 💡 What You’ll Learn
+
 How to use pretrained transformer models for machine translation
 How to implement text-to-speech (TTS) using gTTS
 How to build an interactive user interface in a notebook using ipywidgets
@@ -18,6 +19,7 @@ How to dynamically load and cache models for efficient inference
 How to support multiple language pairs in a user-friendly application
 
 🚀 How to Run
+
 Open the .ipynb file in Jupyter Notebook or Google Colab.
 Run all cells to initialize the interface.
 Enter your text, choose the source and target language, and click Translate & Speak.
