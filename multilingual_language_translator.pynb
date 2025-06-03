@@ -1,0 +1,91 @@
+!pip install transformers --quiet
+!pip install gtts --quiet
+!pip install playsound --quiet
+!pip install sacremoses
+from transformers import MarianMTModel, MarianTokenizer
+import torch
+import ipywidgets as widgets
+from IPython.display import display, clear_output, Audio
+from gtts import gTTS
+import tempfile
+# Supported languages
+LANG_CODES = {
+    "English": "en",
+    "Hindi": "hi",
+    "French": "fr",
+    "German": "de",
+    "Spanish": "es",
+    "Italian": "it",
+    "Russian": "ru",
+    "Chinese": "zh",
+    "Arabic": "ar"
+}
+
+def get_model_name(src_lang, tgt_lang):
+    return f"Helsinki-NLP/opus-mt-{src_lang}-{tgt_lang}"
+
+model_cache = {}
+
+def translate_and_speak(change=None):
+    clear_output(wait=True)
+    display(ui)
+
+    src_lang = source_lang.value
+    tgt_lang = target_lang.value
+    input_text = input_textbox.value.strip()
+
+    if not input_text:
+        print("Please enter some text to translate.")
+        return
+
+    if src_lang == tgt_lang:
+        print("Source and target languages are the same.")
+        print("Output:", input_text)
+        speak_text(input_text, LANG_CODES[src_lang])
+        return
+
+    src_code = LANG_CODES[src_lang]
+    tgt_code = LANG_CODES[tgt_lang]
+
+    key = (src_code, tgt_code)
+    try:
+        if key not in model_cache:
+            print("Loading model, please wait...")
+            model_name = get_model_name(src_code, tgt_code)
+            tokenizer = MarianTokenizer.from_pretrained(model_name)
+            model = MarianMTModel.from_pretrained(model_name)
+            model_cache[key] = (model, tokenizer)
+        else:
+            model, tokenizer = model_cache[key]
+
+        inputs = tokenizer.encode(input_text, return_tensors="pt", truncation=True)
+        translated = model.generate(inputs, max_length=512)
+        output = tokenizer.decode(translated[0], skip_special_tokens=True)
+
+        print("Translated text:")
+        print(output)
+        speak_text(output, tgt_code)
+    except Exception as e:
+        print(f"Translation error: {e}")
+
+def speak_text(text, lang_code):
+    try:
+        tts = gTTS(text=text, lang=lang_code)
+        with tempfile.NamedTemporaryFile(delete=True, suffix=".mp3") as fp:
+            tts.save(fp.name)
+            display(Audio(fp.name, autoplay=True))
+    except Exception as e:
+        print("Error in speech synthesis:", e)
+
+# Widgets UI
+source_lang = widgets.Dropdown(options=list(LANG_CODES.keys()), value="English", description='From:')
+target_lang = widgets.Dropdown(options=list(LANG_CODES.keys()), value="Hindi", description='To:')
+input_textbox = widgets.Textarea(value='', placeholder='Enter text here', description='Input:', layout=widgets.Layout(width='80%', height='100px'))
+translate_button = widgets.Button(description="Translate & Speak", button_style='success')
+
+translate_button.on_click(translate_and_speak)
+
+ui = widgets.VBox([input_textbox, widgets.HBox([source_lang, target_lang]), translate_button])
+
+display(ui)
+
