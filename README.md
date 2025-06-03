@@ -1,4 +1,5 @@
 🌍 Multilingual Language Translator with Speech Output 🎙️
+
 This is a Python-based project that translates text between major world languages and reads the translated text aloud using gTTS (Google Text-to-Speech). It uses pretrained Hugging Face MarianMT models for translation and provides an interactive interface via Jupyter Notebook or Google Colab using ipywidgets.
 
 🔧 Features
